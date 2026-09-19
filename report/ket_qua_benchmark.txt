@@ -1,0 +1,170 @@
+=====================================================================================
+KẾT QUẢ BENCHMARK TRUY XUẤT LAB 7 (CHECKPOINT 6) - CHIẾN LƯỢC: HEADING
+ĐÃ NẠP THÀNH CÔNG: 52 chunks từ 8 tài liệu vào EmbeddingStore
+ĐIỂM TRUY XUẤT MỨC 1 (Naive - Document-level): 10 / 10 điểm
+ĐIỂM TRUY XUẤT MỨC 2 (Rigorous - Fact-level)    : 5 / 10 điểm
+=====================================================================================
+
+=== BẢNG PHÂN TÍCH ĐƯỜNG CƠ SỞ (BASELINE ANALYSIS) ===
+| Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
+|-----------|----------|-------------|------------|-------------------|
+| academic-scholarship-policy.md | fixed_size | 8 | 269.8 ký tự | Không (cắt ngang câu/khoản) |
+| academic-scholarship-policy.md | by_sentences | 5 | 402.2 ký tự | Một phần (đủ câu, nhưng dài) |
+| academic-scholarship-policy.md | recursive | 9 | 223.1 ký tự | Tốt (ưu tiên theo đoạn văn) |
+| course-registration.md | fixed_size | 8 | 299.6 ký tự | Không (cắt ngang câu/khoản) |
+| course-registration.md | by_sentences | 7 | 321.1 ký tự | Một phần (đủ câu, nhưng dài) |
+| course-registration.md | recursive | 10 | 224.5 ký tự | Tốt (ưu tiên theo đoạn văn) |
+| dormitory-regulations.md | fixed_size | 8 | 282.2 ký tự | Không (cắt ngang câu/khoản) |
+| dormitory-regulations.md | by_sentences | 6 | 351.7 ký tự | Một phần (đủ câu, nhưng dài) |
+| dormitory-regulations.md | recursive | 9 | 234.1 ký tự | Tốt (ưu tiên theo đoạn văn) |
+
+=== BẢNG ĐÁNH GIÁ HAI MỨC (TWO-LEVEL EVALUATION TABLE) ===
+| # | Câu hỏi | Dạng hỏi | Top-1 Doc | Fact có trong Top-1? | Naive Score | Fact Score | Đánh giá |
+|---|---------|----------|-----------|----------------------|-------------|------------|----------|
+| 1 | Sinh viên được mượn tối đa bao nhiêu c... | Tra cứu số liệ | library-student-circulation | CÓ                   | 2/2 | 2/2 | CHÍNH XÁC HOÀN TOÀN (Top-1 có facts) |
+| 2 | Điều kiện về điểm GPA và điểm rèn luyệ... | Hỏi điều kiện | academic-scholarship-policy | KHÔNG (Chỉ có ở Top-2/3) | 2/2 | 1/2 | MỘT PHẦN (Fact nằm ở Top-2/3 hoặc Top-1 chỉ là tiêu đề/intro) |
+| 3 | Thời hạn nộp đơn phúc tra điểm thi kết... | Hỏi quy trình | academic-exam-reevaluation | KHÔNG (Chỉ có ở Top-2/3) | 2/2 | 1/2 | MỘT PHẦN (Fact nằm ở Top-2/3 hoặc Top-1 chỉ là tiêu đề/intro) |
+| 4 | Những hành vi và thiết bị sinh nhiệt, ... | Hỏi quy định c | dormitory-regulations | KHÔNG (Chỉ có ở Top-2/3) | 2/2 | 0/2 | THẤT BẠI (Không có fact trong Top-3) |
+| 5 | Hạn mức tối đa và thời hạn mượn tài li... | Tương phản đối | library-student-circulation | KHÔNG (Chỉ có ở Top-2/3) | 2/2 | 1/2 | MỘT PHẦN (Fact nằm ở Top-2/3 hoặc Top-1 chỉ là tiêu đề/intro) |
+
+=== CHI TIẾT TỪNG CÂU HỎI, TOP-3 CHUNKS & KIỂM TRA SỰ THỰC (FACT VERIFICATION) ===
+
+--- [CÂU HỎI 1 - Tra cứu số liệu] ---
+Câu hỏi: Sinh viên được mượn tối đa bao nhiêu cuốn giáo trình về nhà và trong thời gian bao lâu?
+Tài liệu kỳ vọng: library-student-circulation
+Chuỗi sự thực bắt buộc (Expected facts): ['08 cuốn', '90 ngày']
+Gold Answer: Sinh viên được mượn tối đa 08 cuốn giáo trình tại Phòng 111 trong thời hạn 90 ngày (tương đương một học kỳ chính) và được gia hạn 01 lần thêm 30 ngày nếu chưa có bạn đọc khác đặt trước.
+Agent Answer: [Căn cứ thông tin trích dẫn [1]]: Sinh viên đang theo học chính quy tại trường được mượn tài liệu về nhà theo các định mức cụ thể sau: 1. **Phòng mượn Giáo trình (Phòng 111):** - Số lượng mượn tối đa: **08 cuốn sách** cùng một thời điểm;
+Danh sách Top-3 Chunks từ EmbeddingStore:
+  [1] Score: 0.2482 | ID: library-student-circulation#1 | [ĐÚNG DOC - CHỨA FACT]
+      Nội dung: "## Điều 1: Hạn mức mượn và Thời hạn mượn tài liệu về nhà Sinh viên đang theo học chính quy tại trường được mượn tài liệu về nhà theo các định mức cụ t..."
+  [2] Score: 0.2357 | ID: dormitory-regulations#3 | [Khác - Thiếu fact]
+      Nội dung: "## Điều 2: Quy định về Giờ giấc và Sinh hoạt nội trú 1. **Thời gian đóng - mở cổng Ký túc xá:**    - Cổng khu nội trú đóng cửa lúc 23h00 hàng đêm và m..."
+  [3] Score: 0.2162 | ID: library-services#4 | [Khác - Thiếu fact]
+      Nội dung: "## Điều 2: Quy định sử dụng Tủ gửi đồ cá nhân 3. Thư viện không chịu trách nhiệm đối với các tài sản có giá trị lớn (tiền mặt, điện thoại, trang sức, ..."
+Kết luận điểm: Naive = 2/2 đ | Rigorous Fact = 2/2 đ -> CHÍNH XÁC HOÀN TOÀN (Top-1 có facts)
+
+--- [CÂU HỎI 2 - Hỏi điều kiện] ---
+Câu hỏi: Điều kiện về điểm GPA và điểm rèn luyện để sinh viên đạt học bổng khuyến khích học tập Loại A (Xuất sắc) là gì?
+Tài liệu kỳ vọng: academic-scholarship-policy
+Chuỗi sự thực bắt buộc (Expected facts): ['3.6', '90']
+Gold Answer: Để đạt học bổng KKHT Loại A (Xuất sắc), sinh viên cần: điểm trung bình học kỳ (GPA) đạt từ 3.60 trở lên, điểm rèn luyện (ĐRL) đạt từ 90 điểm trở lên (xếp loại Xuất sắc), đăng ký tích lũy tối thiểu 14 tín chỉ trong kỳ, không có môn điểm F và không bị kỷ luật từ khiển trách trở lên.
+Agent Answer: [Căn cứ thông tin trích dẫn [1]]: 1. Học bổng khuyến khích học tập (KKHT) được xét và cấp theo từng học kỳ chính, căn cứ vào quỹ học bổng của từng ngành/viện và kết quả học tập, rèn luyện của sinh viên trong kỳ học liền trước. 2. Sinh viên được đưa vào danh sách xét học bổng phải đáp ứng các điều kiện tiên quyết: - Đăng ký và tích lũy đủ số tín chỉ tối thiểu theo quy định trong học kỳ xét học bổng (tối thiểu 14 tín chỉ);
+Danh sách Top-3 Chunks từ EmbeddingStore:
+  [1] Score: 0.3125 | ID: academic-scholarship-policy#1 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 1: Nguyên tắc và Điều kiện xét cấp 1. Học bổng khuyến khích học tập (KKHT) được xét và cấp theo từng học kỳ chính, căn cứ vào quỹ học bổng của..."
+  [2] Score: 0.2947 | ID: academic-scholarship-policy#3 | [ĐÚNG DOC - CHỨA FACT]
+      Nội dung: "## Điều 2: Các mức Học bổng và Tiêu chuẩn xét chọn Học bổng KKHT được chia thành 3 mức với tiêu chuẩn cụ thể như sau: 1. **Học bổng Loại A (Xuất sắc):..."
+  [3] Score: 0.2753 | ID: academic-scholarship-policy#5 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 3: Quy trình xét chọn và Giải quyết thắc mắc 1. Sau khi có điểm tổng kết học kỳ và điểm rèn luyện, Ban Công tác Sinh viên công bố danh sách dự..."
+Kết luận điểm: Naive = 2/2 đ | Rigorous Fact = 1/2 đ -> MỘT PHẦN (Fact nằm ở Top-2/3 hoặc Top-1 chỉ là tiêu đề/intro)
+
+--- [CÂU HỎI 3 - Hỏi quy trình] ---
+Câu hỏi: Thời hạn nộp đơn phúc tra điểm thi kết thúc học phần là bao lâu và sinh viên nộp ở đâu?
+Tài liệu kỳ vọng: academic-exam-reevaluation
+Chuỗi sự thực bắt buộc (Expected facts): ['07 ngày', 'CTT']
+Gold Answer: Sinh viên phải gửi yêu cầu phúc tra trực tuyến trên Cổng thông tin đào tạo (CTT) trong thời hạn 07 ngày làm việc kể từ ngày điểm thi chính thức của học phần được công bố trên hệ thống.
+Agent Answer: [Căn cứ thông tin trích dẫn [1]]: Văn bản quy định về quy trình, thủ tục và thời hạn nộp đơn phúc tra (phúc khảo) điểm thi học phần dành cho sinh viên Đại học Bách khoa Hà Nội theo Quy chế đào tạo của nhà trường.
+Danh sách Top-3 Chunks từ EmbeddingStore:
+  [1] Score: 0.4725 | ID: academic-exam-reevaluation#0 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "# Quy định Phúc tra Điểm thi Kết thúc Học phần  Văn bản quy định về quy trình, thủ tục và thời hạn nộp đơn phúc tra (phúc khảo) điểm thi học phần dành..."
+  [2] Score: 0.3549 | ID: academic-exam-reevaluation#1 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 1: Quyền nộp đơn phúc tra của sinh viên 1. Mọi sinh viên tham gia kỳ thi kết thúc học phần đều có quyền yêu cầu chấm lại bài thi (phúc tra) nế..."
+  [3] Score: 0.3050 | ID: academic-exam-reevaluation#2 | [ĐÚNG DOC - CHỨA FACT]
+      Nội dung: "## Điều 2: Thời hạn nộp đơn và Quy trình tiếp nhận 1. **Thời hạn nộp đơn:** Sinh viên phải gửi yêu cầu phúc tra trên hệ thống CTT trong thời hạn 07 ng..."
+Kết luận điểm: Naive = 2/2 đ | Rigorous Fact = 1/2 đ -> MỘT PHẦN (Fact nằm ở Top-2/3 hoặc Top-1 chỉ là tiêu đề/intro)
+
+--- [CÂU HỎI 4 - Hỏi quy định cấm] ---
+Câu hỏi: Những hành vi và thiết bị sinh nhiệt, đun nấu nào bị nghiêm cấm trong phòng ở Ký túc xá Bách Khoa?
+Tài liệu kỳ vọng: dormitory-regulations
+Chuỗi sự thực bắt buộc (Expected facts): ['nấu ăn', 'bếp']
+Gold Answer: Trong phòng ở KTX, tuyệt đối nghiêm cấm: nấu ăn, sử dụng bếp gas, bếp từ, ấm đun nước siêu tốc hoặc các thiết bị có công suất lớn; không tàng trữ chất dễ cháy nổ, vũ khí, hung khí, chất kích thích; cấm hút thuốc; không tự ý đưa người lạ hoặc bạn khác giới vào phòng ở qua đêm.
+Agent Answer: [Căn cứ thông tin trích dẫn [1]]: Văn bản quy định về điều kiện, thứ tự ưu tiên xét xếp phòng và các nội quy sinh hoạt nội trú tại khu Ký túc xá Đại học Bách khoa Hà Nội do Trung tâm Dịch vụ và Hỗ trợ Bách khoa quản lý.
+Danh sách Top-3 Chunks từ EmbeddingStore:
+  [1] Score: 0.2829 | ID: dormitory-regulations#0 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "# Quy định Tiếp nhận Nội trú và Nội quy Ký túc xá Bách Khoa  Văn bản quy định về điều kiện, thứ tự ưu tiên xét xếp phòng và các nội quy sinh hoạt nội ..."
+  [2] Score: 0.2434 | ID: dormitory-regulations#6 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 3: Chi phí và Đánh giá kỷ luật 2. Việc chấp hành tốt nội quy ký túc xá là một tiêu chí bắt buộc trong việc đánh giá điểm rèn luyện (ĐRL) của s..."
+  [3] Score: 0.2357 | ID: dormitory-regulations#1 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 1: Đối tượng và Thứ tự ưu tiên xét ở nội trú 1. Ban quản lý Ký túc xá tiếp nhận đăng ký trực tuyến đầu mỗi năm học và học kỳ qua website KTX. ..."
+Kết luận điểm: Naive = 2/2 đ | Rigorous Fact = 0/2 đ -> THẤT BẠI (Không có fact trong Top-3)
+
+--- [CÂU HỎI 5 - Tương phản đối tượng (Cần Metadata Filter)] ---
+Câu hỏi: Hạn mức tối đa và thời hạn mượn tài liệu về nhà là bao nhiêu?
+Tài liệu kỳ vọng: library-student-circulation
+Chuỗi sự thực bắt buộc (Expected facts): ['08 cuốn', '90 ngày']
+Gold Answer: Đối với sinh viên, hạn mức mượn tài liệu về nhà tại Thư viện Tạ Quang Bửu là: tối đa 08 cuốn giáo trình trong thời hạn 90 ngày (gia hạn 30 ngày) và tối đa 05 cuốn sách tham khảo trong thời hạn 30 ngày (gia hạn 07 ngày).
+Agent Answer: [Căn cứ thông tin trích dẫn [1]]: - Gia hạn: Được gia hạn 01 lần với thời gian thêm là **30 ngày** nếu tài liệu chưa có bạn đọc khác đặt chỗ trước (tổng thời gian tối đa là 120 ngày). 2. **Phòng mượn Sách tham khảo (Phòng 102):** - Số lượng mượn tối đa: **05 cuốn sách** cùng một thời điểm;
+Danh sách Top-3 Chunks từ EmbeddingStore:
+  [1] Score: 0.4085 | ID: library-student-circulation#2 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 1: Hạn mức mượn và Thời hạn mượn tài liệu về nhà    - Gia hạn: Được gia hạn 01 lần với thời gian thêm là **30 ngày** nếu tài liệu chưa có bạn ..."
+  [2] Score: 0.3521 | ID: library-student-circulation#1 | [ĐÚNG DOC - CHỨA FACT]
+      Nội dung: "## Điều 1: Hạn mức mượn và Thời hạn mượn tài liệu về nhà Sinh viên đang theo học chính quy tại trường được mượn tài liệu về nhà theo các định mức cụ t..."
+  [3] Score: 0.2385 | ID: library-student-circulation#3 | [ĐÚNG DOC - Thiếu fact]
+      Nội dung: "## Điều 1: Hạn mức mượn và Thời hạn mượn tài liệu về nhà 3. **Phòng đọc tài liệu tại chỗ (Phòng 411):**    - Sinh viên được mượn tối đa **02 cuốn** đọ..."
+Kết luận điểm: Naive = 2/2 đ | Rigorous Fact = 1/2 đ -> MỘT PHẦN (Fact nằm ở Top-2/3 hoặc Top-1 chỉ là tiêu đề/intro)
+
+=====================================================================================
+=== BẰNG CHỨNG A/B TESTING BẮT BUỘC TRÊN CẢ 3 CHIẾN LƯỢC (CÂU HỎI 5) ===
+Câu hỏi 5: 'Hạn mức tối đa và thời hạn mượn tài liệu về nhà là bao nhiêu?'
+Mục đích: Chứng minh tài liệu Giảng viên/Cán bộ lọt vào Top-3 khi KHÔNG lọc, và bị loại bỏ khi CÓ lọc.
+
+--- CHIẾN LƯỢC: HEADING ---
+  [KHÔNG LỌC (Unfiltered)]:
+    (1) Score=0.4085 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#2
+    (2) Score=0.3521 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#1
+    (3) Score=0.2589 | doc_id=library-staff-service | audience=staff | id=library-staff-service#2
+  [CÓ LỌC (Filtered audience='student')]:
+    (1) Score=0.4085 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#2
+    (2) Score=0.3521 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#1
+    (3) Score=0.2385 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#3
+
+--- CHIẾN LƯỢC: RECURSIVE ---
+  [KHÔNG LỌC (Unfiltered)]:
+    (1) Score=0.3939 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#1
+    (2) Score=0.3106 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#2
+    (3) Score=0.2386 | doc_id=library-faculty-research | audience=faculty | id=library-faculty-research#1
+  [CÓ LỌC (Filtered audience='student')]:
+    (1) Score=0.3939 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#1
+    (2) Score=0.3106 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#2
+    (3) Score=0.1624 | doc_id=academic-exam-reevaluation | audience=student | id=academic-exam-reevaluation#0
+
+--- CHIẾN LƯỢC: SENTENCE ---
+  [KHÔNG LỌC (Unfiltered)]:
+    (1) Score=0.3613 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#0
+    (2) Score=0.2838 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#1
+    (3) Score=0.2690 | doc_id=library-staff-service | audience=staff | id=library-staff-service#2
+  [CÓ LỌC (Filtered audience='student')]:
+    (1) Score=0.3613 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#0
+    (2) Score=0.2838 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#1
+    (3) Score=0.1612 | doc_id=library-student-circulation | audience=student | id=library-student-circulation#4
+
+  => KẾT LUẬN A/B CHUNG:
+     Ở cả 3 chiến lược, khi không lọc, Top-3 đều bị ô nhiễm bởi tài liệu của Cán bộ/Giảng viên
+     (ví dụ: library-faculty-research hoặc library-staff-service có hạn mức 15 cuốn/180 ngày).
+     Khi kích hoạt metadata pre-filtering, 100% kết quả Top-3 chỉ thuộc về sinh viên,
+     giúp Agent đưa ra câu trả lời chính xác định mức 8 giáo trình / 90 ngày.
+=====================================================================================
+
+=====================================================================================
+=== PHÂN TÍCH CA LỖI THỰC TẾ (FAILURE CASE ANALYSIS) ===
+1. Tình huống thất bại:
+   - Câu hỏi: Câu hỏi 3 ('Thời hạn nộp đơn phúc tra điểm thi kết thúc học phần là bao lâu và sinh viên nộp ở đâu?')
+   - Khi chạy trên chiến lược SentenceChunker (hoặc FixedSizeChunker không có header preservation),
+     chunk 'academic-exam-reevaluation#0' chiếm vị trí Top-1 với điểm cosine rất cao (0.4961),
+     nhưng chunk này chỉ là tiêu đề và phần mở đầu chung: '# Quy định Phúc tra Điểm thi Kết thúc Học phần...'
+     hoàn toàn KHÔNG chứa thời hạn '07 ngày làm việc'.
+   - Chunk chứa đáp án thực sự ('academic-exam-reevaluation#2') bị đẩy xuống vị trí Top-2 (score=0.2877).
+
+2. Nguyên nhân kỹ thuật sâu xa (Root Cause):
+   - Hiện tượng 'Cosine đo độ tương đồng chủ đề chứ không đo mật độ thông tin': Đoạn mở đầu lặp lại nhiều lần
+     các từ khóa chủ đề ('quy định', 'phúc tra', 'điểm thi', 'kết thúc', 'học phần', 'sinh viên', 'thời hạn nộp đơn')
+     khiến vector của nó bị kéo lệch rất mạnh về phía query.
+   - Nếu chỉ chấm theo Mức 1 (Naive check doc_id), hệ thống sẽ bị thổi phồng là 2/2 điểm.
+     Nhưng ở Mức 2 (Fact check), do Top-1 không có fact nên điểm số thực tế bị hạ xuống 1/2 điểm.
+
+3. Giải pháp khắc phục đề xuất:
+   - Áp dụng HeadingChunker: Tách theo ranh giới Điều và tự động gắn tiêu đề Điều vào chunk con ('Điều 2: Thời hạn nộp đơn...').
+   - Kết hợp Hybrid Search (BM25 keyword matching + Dense vector): BM25 sẽ tăng trọng số cho các từ khóa số liệu cụ thể ('07 ngày', 'CTT').
+   - Thiết lập Two-stage Retrieval: Dùng Cross-encoder Reranker ở giai đoạn 2 để đánh giá mật độ trả lời của đoạn văn bản.
+=====================================================================================
