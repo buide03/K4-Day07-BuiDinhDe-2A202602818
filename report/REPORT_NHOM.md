@@ -1,12 +1,16 @@
-# Báo Cáo Nhóm / Độc Lập — Lab 7: Embedding & Vector Store
+# Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Hình thức:** Solo (Làm việc độc lập)
-**Sinh viên thực hiện:** Bùi Đình Đề - 2A202602818
-**Ngày:** 2026-09-19
+**Chủ đề:** Quy chế Đào tạo và Dịch vụ Sinh viên Đại học Bách khoa Hà Nội (HUST)
+**Ngày thực hiện:** 2026-09-20
 
-> **Nộp báo cáo độc lập (Solo):** Sinh viên tự đảm nhận toàn diện các vai trò (R1: Quản trị dữ liệu, R2: Bộ câu hỏi chuẩn & Benchmark, R3: Thiết kế chiến lược chia đoạn nâng cao). Chi tiết thang điểm: `docs/SCORING.md`.
+### Danh sách thành viên & Phân công nhiệm vụ
 
-**Tổng điểm phần nhóm/độc lập: 40** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình (5).
+| STT | Họ và tên | Mã sinh viên (MSSV) | Vai trò chính | Nhiệm vụ đảm nhiệm cụ thể |
+|:---:|-----------|:-------------------:|:-------------:|---------------------------|
+| 1 | **Bùi Đình Đề** *(Trưởng nhóm)* | **2A202602818** | **R1 & R3** (Data & Custom Chunking) | - Chủ trì thu thập, làm sạch và chuẩn hóa 8 văn bản Quy chế ĐHBK Hà Nội.<br>- Thiết kế cấu trúc Metadata Schema (8 trường).<br>- Thiết kế và cài đặt chiến lược chia đoạn nâng cao **`HeadingChunker`** (tự động gắn tiêu đề Điều vào chunk con). |
+| 2 | **Lê Tuấn Hưng** | **2A202602665** | **R2 & R3** (Benchmark & Comparison) | - Chủ trì xây dựng 5 câu hỏi đánh giá (Benchmark Queries) & Gold Answers kiểm chứng từ tài liệu.<br>- Thực nghiệm đối chứng hai chiến lược baseline: **`RecursiveChunker`** và **`SentenceChunker`**.<br>- Triển khai kịch bản A/B Testing đánh giá hiệu quả Metadata Pre-filtering. |
+
+> **Thang điểm nhóm: 40 điểm** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình / Bài học nhóm (5). (Chi tiết: `docs/SCORING.md`).
 
 ---
 
@@ -70,11 +74,14 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 | dormitory-regulations.md | SentenceChunker (`by_sentences`) | 6 | 351.7 ký tự | Một phần (câu dài do chứa nhiều liệt kê) |
 | dormitory-regulations.md | RecursiveChunker (`recursive`) | 9 | 234.1 ký tự | Tốt (tách trọn vẹn từng nhóm quy định giờ giấc, chi phí) |
 
-### Các chiến lược thử nghiệm đối chứng (Solo Experiments)
+### Các chiến lược thử nghiệm trong nhóm (Team Experiments)
 
-> Sinh viên độc lập triển khai và thực nghiệm đối chứng cả 3 chiến lược:
+> Nhóm phân công mỗi thành viên đảm nhận thử nghiệm và đối chứng các chiến lược độc lập:
+> - **Bùi Đình Đề**: Nghiên cứu cấu trúc văn bản quy chế và phát triển chiến lược đề xuất **`HeadingChunker`** (Custom).
+> - **Lê Tuấn Hưng**: Thực nghiệm, tinh chỉnh tham số và đánh giá hai chiến lược đối chứng **`RecursiveChunker`** và **`SentenceChunker`**.
 
-**1. Chiến lược Đề xuất (Primary Strategy) — Custom HeadingChunker**
+**1. Chiến lược Đề xuất (Primary Strategy) — Custom HeadingChunker (Bùi Đình Đề)**
+- **Thành viên phụ trách:** Bùi Đình Đề
 - **Loại chiến lược:** Custom (`HeadingChunker` - Phân tách theo đề mục cấp 2/3 kèm bảo toàn tiêu đề ngữ cảnh)
 - **Mô tả & lý do chọn cho chủ đề này:** Văn bản quy chế đại học có cấu trúc đề mục pháp lý nghiêm ngặt (`## Điều...`). `HeadingChunker` cắt theo từng Điều để mỗi chunk là một đơn vị quy định trọn vẹn. Nếu một Điều quá dài vượt `chunk_size`, hệ thống dùng `RecursiveChunker` chia nhỏ tiếp và tự động gắn kèm tiêu đề của Điều (`## Điều X: ...`) vào đầu mỗi chunk con để đảm bảo vector embeddings không bị mất ngữ cảnh nguồn gốc.
 - **Code snippet:**
@@ -107,24 +114,26 @@ class HeadingChunker:
         return chunks if chunks else [text.strip()]
 ```
 
-**2. Chiến lược Đối chứng 1 — RecursiveChunker**
+**2. Chiến lược Đối chứng 1 — RecursiveChunker (Lê Tuấn Hưng)**
+- **Thành viên phụ trách:** Lê Tuấn Hưng
 - **Loại chiến lược:** Recursive (`RecursiveChunker`, chunk_size=400, separators=["\n\n", "\n", ". ", " ", ""])
 - **Mô tả & lý do chọn:** Phương pháp chia nhỏ đệ quy theo phân cấp tự nhiên của văn bản. Ưu tiên ngắt ở khối đoạn văn `\n\n`, sau đó đến dòng `\n` và câu `. `. Giải pháp này cân bằng tốt giữa việc giữ ngữ nghĩa đoạn văn và kiểm soát kích thước chunk không bị phình to.
 
-**3. Chiến lược Đối chứng 2 — SentenceChunker**
+**3. Chiến lược Đối chứng 2 — SentenceChunker (Lê Tuấn Hưng)**
+- **Thành viên phụ trách:** Lê Tuấn Hưng
 - **Loại chiến lược:** Sentence (`SentenceChunker`, max_sentences_per_chunk=3)
 - **Mô tả & lý do chọn:** Chia tài liệu dựa trên ranh giới câu bằng biểu thức chính quy lookbehind (`(?<=[.!?])\s+`). Đảm bảo mỗi chunk luôn chứa các câu ngữ pháp trọn vẹn, phù hợp với việc trích xuất luận điểm.
 
-### So Sánh Đối Chứng Giữa Các Chiến Lược
+### So Sánh Đối Chứng Giữa Các Chiến Lược Trong Nhóm
 
-| Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
-|-----------------------|----------------------|-----------|----------|
-| **HeadingChunker (Đề xuất)** | **10 / 10** | Bảo toàn trọn vẹn ranh giới điều khoản pháp lý; gắn tiêu đề vào chunk con nên ngữ cảnh không bị đứt đoạn; Top-1 đạt chính xác 5/5 câu. | Phụ thuộc vào tài liệu nguồn có định dạng markdown chuẩn (`## `). |
-| **RecursiveChunker (Đối chứng 1)** | 9 / 10 | Linh hoạt cao với mọi loại văn bản thô; độ dài chunk rất đồng đều; 5/5 câu đều có chunk đúng trong Top-3. | Với những Điều luật dài, chunk con ở nửa sau bị tách rời khỏi tiêu đề Điều. |
-| **SentenceChunker (Đối chứng 2)** | 8 / 10 | Đảm bảo câu văn không bị cắt vụn ngang xương; cài đặt đơn giản, xử lý nhanh. | Không kiểm soát được độ dài ký tự do câu quy chế hành chính thường rất dài; dễ ghép nhầm 2 điều khoản vào 1 chunk. |
+| Chiến lược (Strategy) | Thành viên phụ trách | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
+|-----------------------|:-------------------:|:--------------------:|-----------|----------|
+| **HeadingChunker (Đề xuất)** | **Bùi Đình Đề** | **10 / 10** | Bảo toàn trọn vẹn ranh giới điều khoản pháp lý; gắn tiêu đề vào chunk con nên ngữ cảnh không bị đứt đoạn; Top-1 đạt chính xác 5/5 câu. | Phụ thuộc vào tài liệu nguồn có định dạng markdown chuẩn (`## `). |
+| **RecursiveChunker (Đối chứng 1)** | **Lê Tuấn Hưng** | 9 / 10 | Linh hoạt cao với mọi loại văn bản thô; độ dài chunk rất đồng đều; 5/5 câu đều có chunk đúng trong Top-3. | Với những Điều luật dài, chunk con ở nửa sau bị tách rời khỏi tiêu đề Điều. |
+| **SentenceChunker (Đối chứng 2)** | **Lê Tuấn Hưng** | 8 / 10 | Đảm bảo câu văn không bị cắt vụn ngang xương; cài đặt đơn giản, xử lý nhanh. | Không kiểm soát được độ dài ký tự do câu quy chế hành chính thường rất dài; dễ ghép nhầm 2 điều khoản vào 1 chunk. |
 
-**Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> **HeadingChunker** là chiến lược tối ưu nhất cho tập dữ liệu quy chế và dịch vụ sinh viên ĐHBK Hà Nội. Bởi vì toàn bộ văn bản quy định của trường được ban hành có cấu trúc phân tầng pháp lý rất chặt chẽ (Điều, Khoản, Điểm). Việc chia theo đề mục kết hợp tự động đính kèm tiêu đề Điều vào chunk con giúp mô hình biểu diễn vector chính xác phạm vi áp dụng, ngăn chặn việc trích dẫn thông tin mồ côi (thiếu chủ thể và điều khoản áp dụng).
+**Chiến lược nào tốt nhất cho chủ đề này? Tại sao? (Cả nhóm thống nhất)**
+> Cả hai thành viên Bùi Đình Đề và Lê Tuấn Hưng đều đồng thuận chọn **HeadingChunker** là chiến lược tối ưu nhất cho tập dữ liệu quy chế và dịch vụ sinh viên ĐHBK Hà Nội. Bởi vì toàn bộ văn bản quy định của trường được ban hành có cấu trúc phân tầng pháp lý rất chặt chẽ (Điều, Khoản, Điểm). Việc chia theo đề mục kết hợp tự động đính kèm tiêu đề Điều vào chunk con giúp mô hình biểu diễn vector chính xác phạm vi áp dụng, ngăn chặn việc trích dẫn thông tin mồ côi (thiếu chủ thể và điều khoản áp dụng).
 
 ---
 

@@ -1,8 +1,8 @@
 # Báo Cáo Cá Nhân — Lab 7: Embedding & Vector Store
 
 **Họ tên:** Bùi Đình Đề - 2A202602818
-**Hình thức:** Solo (Làm việc độc lập)
-**Ngày:** 2026-09-19
+**Thành viên cùng nhóm:** Lê Tuấn Hưng - 2A202602665
+**Ngày:** 2026-09-20
 
 > **Nộp 1 bản / sinh viên.** Phần nhóm (lựa chọn tài liệu, thiết kế chiến lược, bộ câu hỏi đánh giá, demo) nộp chung 1 bản trong `REPORT_NHOM.md`. Chi tiết thang điểm: `docs/SCORING.md`.
 
